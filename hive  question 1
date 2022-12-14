@@ -1,0 +1,6 @@
+Create table examcust(custid int , firstname string, lastname string, age int, profession string)
+Row format delimited
+Fields terminated by ‘,’
+Stored as textfile;
+Load data local inpath’custs.txt’ overwrite into table examcust;
+Select profession, count(profession) as total  from examcust group by profession order by total desc;
