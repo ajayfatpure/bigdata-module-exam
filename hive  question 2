@@ -1,0 +1,26 @@
+Create table saletable(txnid int, txndate string, custid int, amount double, category string, product string, city string, state string, spendby string)
+Row format delimited
+Fields terminated by ‘,’
+Stored as textfile;
+
+Desc formatted saletable;
+
+Load data local inpath’txns1.txt’ overwrite into table saletable;
+
+Select product , count(custid) as total from saletable group by product order by total desc limit 10;
+
+
+
+Create table salepartition (txnid int, txndate string, custid int, amount double, product string, city string, state string, spendby string)
+Partitioned by (category string)
+Row format delimited
+Fields terminated by ‘,’
+Stored as textfile;
+
+Set hive.exec.dynamic.partition.mode=nonstrict;
+Set hive.exec.dynamic.partition=true;
+
+Insert overwrite table salepartition partition(category) 
+select st.txnid, st.txndate , st.custid, st.amount, st.product, st.city, st.state, st.spendby, st.category 
+from saletable st distribute by category;
+
