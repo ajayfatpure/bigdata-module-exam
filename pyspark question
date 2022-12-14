@@ -1,0 +1,25 @@
+Hadoop fs -mkdir airlinequestion
+Hadoop fs -put airlines.csv  airlinequestion/
+
+from pyspark.context import SparkContext
+from pyspark.sql.session import SparkSession
+sc = SparkContext('local')
+spark = SparkSession(sc)
+
+from pyspark.sql.types import StructType, StringType, IntegerType, DoubleType, LongType
+
+schemax=StructType().add("year", IntegerType(),True).add("quarter", IntegerType(),True).add("Average_revenue_per_seat", DoubleType(),True).add("total_tickets", IntegerType(),True)
+
+df1=spark.read.format("csv").option("header", "True").schema(schemax).load("hdfs://nameservice1/user/bigcdac432587/airlinequestion/airlines.csv")
+df1.printSchema()
+df1.show()
+df1.registerTempTable(“airlines”)
+
+q1=spark.sql("select year, sum(total_tickets)as highest from airlines group by year order by highest desc limit 1")
+q1.show()
+
+q2=spark.sql("select year, sum((average_revenue_per_seat*total_tickets))/1000000 as avg_in_millions from airlines group by year order by avg_in_millions desc limit 1 ")
+q2.show()
+
+q3=spark.sql("select year,quarter ,sum((average_revenue_per_seat*total_tickets))/1000000 as avg_in_millions from airlines group by year,quarter order by avg_in_millions desc limit 1 ")
+q3.show()
